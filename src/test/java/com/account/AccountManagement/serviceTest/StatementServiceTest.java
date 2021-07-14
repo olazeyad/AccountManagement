@@ -18,7 +18,12 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.when;
 
-
+/**
+ * statement service Junit test
+ * @author ola zeyad
+ * 11-7-2021
+ * @version 1.0
+ */
 @SpringBootTest
 public class StatementServiceTest {
     @Autowired
