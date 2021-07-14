@@ -29,7 +29,6 @@ import java.util.stream.Collectors;
 @Order(Ordered.HIGHEST_PRECEDENCE)
 @ControllerAdvice
 public class CustomExceptionHandler extends ResponseEntityExceptionHandler{
-    private static final Logger logger = LoggerFactory.getLogger(CustomExceptionHandler.class);
 
     @ExceptionHandler(AccountNotFoundException.class)
     public ResponseEntity<Object> handleAccountNotFoundException(

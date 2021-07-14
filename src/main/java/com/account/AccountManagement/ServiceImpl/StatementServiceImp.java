@@ -11,7 +11,6 @@ import org.springframework.stereotype.Service;
 import com.account.AccountManagement.exception.*;
 
 import javax.transaction.Transactional;
-import java.security.NoSuchAlgorithmException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
@@ -62,13 +61,14 @@ public class StatementServiceImp implements StatementService {
             else
                 statementsList = statementRepo.findAll();
 
-            if (statementsList.isEmpty())
-                if(checkValue.isPresent())
-                    throw new NoDataFoundException("No statements found for account with id = " + accountId);
+            if (statementsList.isEmpty()) {
+                if (checkValue.isPresent())
+                    throw new NoDataFoundException(String.format("No statements found for account with id = %d", accountId));
                 else
                     throw new NoDataFoundException("No statements found");
+            }
 
-            logger.info("repo result size: "+statementsList.size()+", Repo result: "+statementsList);
+            logger.info(String.format("repo result size: %d, Repo result: %s",statementsList.size(),statementsList));
 
             List<Statement> streamResult = statementsList.stream()
                     .filter(statement->isAfter.or(isEqual).test(LocalDate.parse(statement.getDate(), formatter),fromDate))
@@ -76,24 +76,27 @@ public class StatementServiceImp implements StatementService {
                     .sorted(Comparator.comparing(statement->LocalDate.parse(statement.getDate(), formatter)))
                     .collect(Collectors.toList());
 
-            if (streamResult.isEmpty())
-                if(checkValue.isPresent())
-                    throw new NoDataFoundException("No statements found for account with id = " + accountId+ " within the provided date range");
+            if (streamResult.isEmpty()) {
+                if (checkValue.isPresent()) {
+                    throw new NoDataFoundException(
+                            String.format("No statements found for account with id = %d  within the provided date range", accountId));
+                }
                 else
                     throw new NoDataFoundException("No statements found within the provided date range");
+            }
 
             streamResult.forEach(statement -> {
                 statement.getAccount().setAccountNumber(String.valueOf(
                         hashingMapper.encoder(statement.getAccount().getAccountNumber())));
             });
-            logger.info("Stream result size: "+streamResult.size()+", Stream result: "+streamResult);
+            logger.info(String.format("Stream result size: %s, Stream result: %d",streamResult.size(),streamResult));
 
             return streamResult;
         }catch (NumberFormatException ex){
-            logger.error("NumberParsingException: "+ex.getStackTrace());
+            logger.error(String.format("NumberParsingException: %d",ex.getStackTrace()));
             throw new NumberParsingException("Not Valid Parameters");
         }catch (DateTimeParseException e ){
-            logger.error("DateTimeParseException: "+e.getStackTrace());
+            logger.error(String.format("DateTimeParseException: %d",e.getStackTrace()));
             throw new DateParsingException("Invalid Date Format");
         }
     }
@@ -118,13 +121,14 @@ public class StatementServiceImp implements StatementService {
             else
                 statementsList = statementRepo.findAll();
 
-            if (statementsList.isEmpty())
-                if(checkValue.isPresent())
-                    throw new NoDataFoundException("No statements found for account with id = " + accountId);
+            if (statementsList.isEmpty()) {
+                if (checkValue.isPresent())
+                    throw new NoDataFoundException(String.format("No statements found for account with id = %d", accountId));
                 else
                     throw new NoDataFoundException("No statements found");
+            }
 
-            logger.info("repo result size: "+statementsList.size()+", Repo result: "+statementsList);
+            logger.info(String.format("repo result size: %d, Repo result: %s",statementsList.size(),statementsList));
 
             List<Statement> streamResult = statementsList.stream()
                     .filter(statement->Double.parseDouble(statement.getAmount()) >= fromAmount)
@@ -132,22 +136,24 @@ public class StatementServiceImp implements StatementService {
                     .sorted(Comparator.comparing(statement->LocalDate.parse(statement.getDate(), formatter)))
                     .collect(Collectors.toList());
 
-            if (streamResult.isEmpty())
-                if(checkValue.isPresent())
-                    throw new NoDataFoundException("No Statements found for account with id = " + accountId+ " with the provided amount range");
+            if (streamResult.isEmpty()) {
+                if (checkValue.isPresent())
+                    throw new NoDataFoundException(
+                            String.format("No Statements found for account with id = %d  with the provided amount range", accountId));
                 else
                     throw new NoDataFoundException("No Statements found with the provided amount range");
+            }
 
             streamResult.forEach(statement -> {
                 statement.getAccount().setAccountNumber(String.valueOf(
                         hashingMapper.encoder(statement.getAccount().getAccountNumber())));
             });
-            logger.info("Stream result size: "+streamResult.size()+", Stream result: "+streamResult);
+            logger.info(String.format("Stream result size: %d, Stream result: %s",streamResult.size(),streamResult));
 
             return streamResult;
 
         }catch (NumberFormatException ex){
-            logger.error("NumberParsingException: "+ex.getStackTrace());
+            logger.error(String.format("NumberParsingException: %d",ex.getStackTrace()));
             throw new NumberParsingException("Not Valid Parameters");
         }
     }
@@ -170,13 +176,14 @@ public class StatementServiceImp implements StatementService {
             else
                 statementsList = statementRepo.findAll();
 
-            if (statementsList.isEmpty())
-                if(checkValue.isPresent())
-                    throw new NoDataFoundException("No statements found for account with id = " + accountId);
+            if (statementsList.isEmpty()) {
+                if (checkValue.isPresent())
+                    throw new NoDataFoundException(String.format("No statements found for account with id =  %d", accountId));
                 else
                     throw new NoDataFoundException("No statements found");
+            }
 
-            logger.info("repo result size: " + statementsList.size() + ", Repo result: " + statementsList);
+            logger.info(String.format("repo result size: %d, Repo result: %s",statementsList.size(), statementsList));
 
             List<Statement> streamResult = statementsList.stream()
                     .filter(statement -> isAfter.or(isEqual).test(LocalDate.parse(statement.getDate(), formatter), pastDate))
@@ -184,21 +191,22 @@ public class StatementServiceImp implements StatementService {
                     .sorted(Comparator.comparing(statement -> LocalDate.parse(statement.getDate(), formatter)))
                     .collect(Collectors.toList());
 
-            if (streamResult.isEmpty())
-                if(checkValue.isPresent())
-                    throw new NoDataFoundException("No statements found for account with id = " + accountId + " within the last three months");
+            if (streamResult.isEmpty()) {
+                if (checkValue.isPresent())
+                    throw new NoDataFoundException(String.format("No statements found for account with id = %d within the last three months", accountId));
                 else
                     throw new NoDataFoundException("No statements found within the last three months");
+            }
 
             streamResult.forEach(statement -> {
                 statement.getAccount().setAccountNumber(String.valueOf(
                         hashingMapper.encoder(statement.getAccount().getAccountNumber())));
             });
-            logger.info("Stream result size: " + streamResult.size() + ", Stream result: " + streamResult);
+            logger.info(String.format("Stream result size: %d, Stream result: %s", streamResult.size(),streamResult));
 
             return streamResult;
         }catch (NumberFormatException ex){
-            logger.error("NumberParsingException: "+ex.getStackTrace());
+            logger.error(String.format("NumberParsingException: %d",ex.getStackTrace()));
             throw new NumberParsingException("Not Valid Parameters");
         }
     }
