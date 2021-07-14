@@ -2,6 +2,12 @@ package com.account.AccountManagement.model;
 
 import java.io.Serializable;
 
+/**
+ * Bean for authentication request
+ * @author ola zeyad
+ * 13-7-2021
+ * @version 1.0
+ */
 public class AuthenticationRequest implements Serializable {
 
 

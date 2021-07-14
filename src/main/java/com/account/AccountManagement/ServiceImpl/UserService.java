@@ -9,6 +9,12 @@ import org.springframework.stereotype.Service;
 
 import java.util.Arrays;
 
+/**
+ * Class for user details to used by authentication and authorization
+ * @author ola zeyad
+ * 12-7-2021
+ * @version 1.0
+ */
 @Service
 public class UserService implements UserDetailsService {
 

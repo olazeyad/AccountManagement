@@ -11,10 +11,16 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
 
+/**
+ * Class JwtUtil to contain required function for JWT
+ * @author ola zeyad
+ * 13-7-2021
+ * @version 1.0
+ */
 @Service
 public class JwtUtil {
 
-    private String SECRET_KEY = "secret";
+    private final String SECRET_KEY = "confidential";
 
     public String extractUsername(String token) {
         return extractClaim(token, Claims::getSubject);

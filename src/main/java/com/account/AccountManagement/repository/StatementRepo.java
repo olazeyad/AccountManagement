@@ -5,9 +5,9 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.List;
 
 /**
- * @description statement Repository
+ *  statement Repository
  * @author ola zeyad
- * @date 11-7-2021
+ * 11-7-2021
  * @version 1.0
  */
 public interface StatementRepo extends JpaRepository<Statement, Integer> {

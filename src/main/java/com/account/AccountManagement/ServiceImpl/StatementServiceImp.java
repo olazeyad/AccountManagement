@@ -1,8 +1,8 @@
 package com.account.AccountManagement.ServiceImpl;
 
 import com.account.AccountManagement.Service.StatementService;
+import com.account.AccountManagement.Util.HashingMapper;
 import com.account.AccountManagement.entity.Statement;
-import com.account.AccountManagement.repository.AccountRepo;
 import com.account.AccountManagement.repository.StatementRepo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -11,18 +11,20 @@ import org.springframework.stereotype.Service;
 import com.account.AccountManagement.exception.*;
 
 import javax.transaction.Transactional;
+import java.security.NoSuchAlgorithmException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.BiPredicate;
 import java.util.stream.Collectors;
 
 /**
- * @description statement service to getting and retrieving statements data
+ * statement service to getting and retrieving statements data
  * @author ola zeyad
- * @date 11-7-2021
+ * 11-7-2021
  * @version 1.0
  */
 @Service
@@ -30,32 +32,43 @@ import java.util.stream.Collectors;
 public class StatementServiceImp implements StatementService {
     private static final Logger logger = LoggerFactory.getLogger(StatementServiceImp.class);
     private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy");
+
     @Autowired
-    private StatementRepo repo;
+    private StatementRepo statementRepo;
     @Autowired
-    private AccountRepo accountRepo;
+    private HashingMapper hashingMapper;
 
     BiPredicate<LocalDate,LocalDate> isEqual= LocalDate::isEqual;
     BiPredicate<LocalDate,LocalDate> isAfter= LocalDate::isAfter;
     BiPredicate<LocalDate,LocalDate> isBefore= LocalDate::isBefore;
 
     /**
-     * @description method to get all statements for specific account within date range
-     * @param accountId
-     * @param startDate
-     * @param endDate
-     * @return
+     * method to get all statements for specific account within date range, when no accountId provided
+     * then will return statement for all account within date range
+     * @param accountId to determine which account to query
+     * @param startDate start date point ex: 05.04.2020
+     * @param endDate until date point
+     * @return list of statement after filtering
      */
-    public List<Statement> getStatementsByAccountAndDateRange(String accountId, String startDate,String endDate) {
-        logger.info("%%%%%%%%%% getStatementsByAccountAndDateRange %%%%%%%%%%%");
+    public List<Statement> getStatementsByAccountAndDateRange(String accountId, String startDate,String endDate) throws NoSuchAlgorithmException {
+        List<Statement> statementsList;
         try {
             LocalDate fromDate=LocalDate.parse(startDate, formatter);
             LocalDate toDate =LocalDate.parse(endDate, formatter);
 
-            List<Statement> statementsList =repo.findByAccount_AccountId(Integer.parseInt(accountId));
+            Optional<String> checkValue = Optional.ofNullable(accountId);
+            if(checkValue.isPresent()) // check for value is present or not
+                statementsList = statementRepo.findByAccount_AccountId(Integer.parseInt(accountId));
+            else
+                statementsList = statementRepo.findAll();
+
             if (statementsList.isEmpty())
-                throw new NoDataFoundException("No statements found for account with id = " + accountId);
-            logger.info("repo result size: "+statementsList.size()+", Repo result: "+statementsList.toString());
+                if(checkValue.isPresent())
+                    throw new NoDataFoundException("No statements found for account with id = " + accountId);
+                else
+                    throw new NoDataFoundException("No statements found");
+
+            logger.info("repo result size: "+statementsList.size()+", Repo result: "+statementsList);
 
             List<Statement> streamResult = statementsList.stream()
                     .filter(statement->isAfter.or(isEqual).test(LocalDate.parse(statement.getDate(), formatter),fromDate))
@@ -64,38 +77,54 @@ public class StatementServiceImp implements StatementService {
                     .collect(Collectors.toList());
 
             if (streamResult.isEmpty())
-                throw new NoDataFoundException("No statements found for account with id = " + accountId+ " within the provided date range");
-            logger.info("Stream result size: "+streamResult.size()+", Stream result: "+streamResult.toString());
+                if(checkValue.isPresent())
+                    throw new NoDataFoundException("No statements found for account with id = " + accountId+ " within the provided date range");
+                else
+                    throw new NoDataFoundException("No statements found within the provided date range");
+
+            streamResult.forEach(statement -> {
+                statement.getAccount().setAccountNumber(String.valueOf(
+                        hashingMapper.encoder(statement.getAccount().getAccountNumber())));
+            });
+            logger.info("Stream result size: "+streamResult.size()+", Stream result: "+streamResult);
 
             return streamResult;
         }catch (NumberFormatException ex){
-            throw new NumberParsingException("Can not parse number from string");
-        }catch (DateTimeParseException e ){
-            throw new DateParsingException("Invalid Date Format");
-        }catch (NullPointerException e)
-        {
+            logger.error("NumberParsingException: "+ex.getStackTrace());
             throw new NumberParsingException("Not Valid Parameters");
+        }catch (DateTimeParseException e ){
+            logger.error("DateTimeParseException: "+e.getStackTrace());
+            throw new DateParsingException("Invalid Date Format");
         }
     }
 
     /**
-     *@description method to get all statements for specific account within amount range
-     * @param accountId
-     * @param startAmount
-     * @param endAmount
-     * @return
+     *method to get all statements for specific account within amount range, when no accountId provided
+     * then will return statement for all account within amount range
+     * @param accountId to determine which account to query
+     * @param startAmount start point for amount range
+     * @param endAmount  end point for amount range
+     * @return list of statement after filtering
      */
     public List<Statement> getStatementsByAccountAndAmountRange(String accountId, String startAmount,String endAmount) {
-        logger.info("%%%%%%%%%% getStatementsByAccountAndAmountRange %%%%%%%%%%%");
-
+        List<Statement> statementsList;
         try {
             double fromAmount = Double.parseDouble(startAmount);
             double toAmount = Double.parseDouble(endAmount);
 
-            List<Statement> statementsList =repo.findByAccount_AccountId(Integer.parseInt(accountId));
+            Optional<String> checkValue = Optional.ofNullable(accountId);
+            if(checkValue.isPresent()) // check for value is present or not
+                statementsList = statementRepo.findByAccount_AccountId(Integer.parseInt(accountId));
+            else
+                statementsList = statementRepo.findAll();
+
             if (statementsList.isEmpty())
-                throw new NoDataFoundException("No statements found for account with id = " + accountId);
-            logger.info("repo result size: "+statementsList.size()+", Repo result: "+statementsList.toString());
+                if(checkValue.isPresent())
+                    throw new NoDataFoundException("No statements found for account with id = " + accountId);
+                else
+                    throw new NoDataFoundException("No statements found");
+
+            logger.info("repo result size: "+statementsList.size()+", Repo result: "+statementsList);
 
             List<Statement> streamResult = statementsList.stream()
                     .filter(statement->Double.parseDouble(statement.getAmount()) >= fromAmount)
@@ -104,37 +133,50 @@ public class StatementServiceImp implements StatementService {
                     .collect(Collectors.toList());
 
             if (streamResult.isEmpty())
-                throw new NoDataFoundException("No Statements found for account with id = " + accountId+ " with the provided amount range");
-            logger.info("Stream result size: "+streamResult.size()+", Stream result: "+streamResult.toString());
+                if(checkValue.isPresent())
+                    throw new NoDataFoundException("No Statements found for account with id = " + accountId+ " with the provided amount range");
+                else
+                    throw new NoDataFoundException("No Statements found with the provided amount range");
+
+            streamResult.forEach(statement -> {
+                statement.getAccount().setAccountNumber(String.valueOf(
+                        hashingMapper.encoder(statement.getAccount().getAccountNumber())));
+            });
+            logger.info("Stream result size: "+streamResult.size()+", Stream result: "+streamResult);
 
             return streamResult;
 
         }catch (NumberFormatException ex){
-            throw new NumberParsingException("Can not parse number from string");
-        }catch (NullPointerException e)
-        {
+            logger.error("NumberParsingException: "+ex.getStackTrace());
             throw new NumberParsingException("Not Valid Parameters");
         }
     }
 
     /**
-     * @description method to get all statements for specific account in the past three months
-     * @param accountId
-     * @return
+     *  method to get all statements for specific account in the past three months, when no accountId provided
+     * then will return statement for all account within the past three months
+     * @param accountId to determine which account to query
+     * @return list of statement after filtering
      */
     public List<Statement> getThreeMonthsPastStatementsByAccount(String accountId) {
-        logger.error("%%%%%%%%%% getThreeMonthsPastStatementsByAccount %%%%%%%%");
+        List<Statement> statementsList;
         try {
             LocalDate currentDate = LocalDate.now();
             LocalDate pastDate = currentDate.minusMonths(3);
 
-            logger.info("Current date: " + currentDate + ", before 3 months: " + pastDate);
+            Optional<String> checkValue = Optional.ofNullable(accountId);
+            if(checkValue.isPresent()) // check for value is present or not
+                statementsList = statementRepo.findByAccount_AccountId(Integer.parseInt(accountId));
+            else
+                statementsList = statementRepo.findAll();
 
-            List<Statement> statementsList = repo.findByAccount_AccountId(Integer.parseInt(accountId));
             if (statementsList.isEmpty())
-                throw new NoDataFoundException("No statements found for account with id = " + accountId);
+                if(checkValue.isPresent())
+                    throw new NoDataFoundException("No statements found for account with id = " + accountId);
+                else
+                    throw new NoDataFoundException("No statements found");
 
-            logger.info("repo result size: " + statementsList.size() + ", Repo result: " + statementsList.toString());
+            logger.info("repo result size: " + statementsList.size() + ", Repo result: " + statementsList);
 
             List<Statement> streamResult = statementsList.stream()
                     .filter(statement -> isAfter.or(isEqual).test(LocalDate.parse(statement.getDate(), formatter), pastDate))
@@ -143,15 +185,20 @@ public class StatementServiceImp implements StatementService {
                     .collect(Collectors.toList());
 
             if (streamResult.isEmpty())
-                throw new NoDataFoundException("No statements found for account with id = " + accountId + " within the last three months");
+                if(checkValue.isPresent())
+                    throw new NoDataFoundException("No statements found for account with id = " + accountId + " within the last three months");
+                else
+                    throw new NoDataFoundException("No statements found within the last three months");
 
-            logger.info("Stream result size: " + streamResult.size() + ", Stream result: " + streamResult.toString());
+            streamResult.forEach(statement -> {
+                statement.getAccount().setAccountNumber(String.valueOf(
+                        hashingMapper.encoder(statement.getAccount().getAccountNumber())));
+            });
+            logger.info("Stream result size: " + streamResult.size() + ", Stream result: " + streamResult);
 
             return streamResult;
         }catch (NumberFormatException ex){
-            throw new NumberParsingException("Can not parse number from string");
-        }catch (NullPointerException e)
-        {
+            logger.error("NumberParsingException: "+ex.getStackTrace());
             throw new NumberParsingException("Not Valid Parameters");
         }
     }

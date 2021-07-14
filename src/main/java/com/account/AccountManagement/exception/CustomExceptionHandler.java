@@ -1,6 +1,5 @@
 package com.account.AccountManagement.exception;
 
-import com.fasterxml.jackson.databind.exc.InvalidFormatException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.Ordered;
@@ -8,22 +7,25 @@ import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeParseException;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+/**
+ * Custom exception handler
+ * @author ola zeyad
+ * 13-7-2021
+ * @version 1.0
+ */
 @Order(Ordered.HIGHEST_PRECEDENCE)
 @ControllerAdvice
 public class CustomExceptionHandler extends ResponseEntityExceptionHandler{
@@ -37,7 +39,7 @@ public class CustomExceptionHandler extends ResponseEntityExceptionHandler{
         body.put("timestamp", LocalDateTime.now());
         body.put("message", ex.getMessage());
 
-        return new ResponseEntity<>(body, HttpStatus.NOT_FOUND);
+        return new ResponseEntity<>(body, HttpStatus.OK);
     }
 
     @ExceptionHandler(NoDataFoundException.class)
@@ -48,7 +50,7 @@ public class CustomExceptionHandler extends ResponseEntityExceptionHandler{
         body.put("Timestamp", LocalDateTime.now());
         body.put("Message", ex.getMessage());
 
-        return new ResponseEntity<>(body, HttpStatus.NOT_FOUND);
+        return new ResponseEntity<>(body, HttpStatus.OK);
     }
 
     @ExceptionHandler(NumberParsingException.class)
@@ -59,7 +61,7 @@ public class CustomExceptionHandler extends ResponseEntityExceptionHandler{
         body.put("Timestamp", LocalDateTime.now());
         body.put("Message", ex.getMessage());
 
-        return new ResponseEntity<>(body, HttpStatus.NOT_ACCEPTABLE);
+        return new ResponseEntity<>(body, HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler(DateParsingException.class)
@@ -70,7 +72,7 @@ public class CustomExceptionHandler extends ResponseEntityExceptionHandler{
         body.put("Timestamp", LocalDateTime.now());
         body.put("Message", ex.getMessage());
 
-        return new ResponseEntity<>(body, HttpStatus.NOT_ACCEPTABLE);
+        return new ResponseEntity<>(body, HttpStatus.BAD_REQUEST);
     }
 
     @Override

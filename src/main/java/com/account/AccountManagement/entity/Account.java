@@ -7,9 +7,9 @@ import javax.persistence.*;
 import java.io.Serializable;
 
 /**
- * @description Account Entity
+ * Account Entity
  * @author ola zeyad
- * @date 11-7-2021
+ * 11-7-2021
  * @version 1.0
  */
 @Entity
