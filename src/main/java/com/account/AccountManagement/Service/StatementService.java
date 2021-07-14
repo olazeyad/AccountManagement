@@ -24,7 +24,7 @@ public interface StatementService  {
      * @param endDate until date point
      * @return list of statement after filtering
      */
-    public List<Statement> getStatementsByAccountAndDateRange(String accountId, String startDate, String endDate) throws NoSuchAlgorithmException;
+    public List<Statement> getStatementsByAccountAndDateRange(String accountId, String startDate, String endDate);
 
     /**
      *method to get all statements for specific account within amount range, when no accountId provided
