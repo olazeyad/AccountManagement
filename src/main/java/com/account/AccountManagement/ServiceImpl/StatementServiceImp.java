@@ -63,7 +63,7 @@ public class StatementServiceImp implements StatementService {
 
             if (statementsList.isEmpty()) {
                 if (checkValue.isPresent())
-                    throw new NoDataFoundException(String.format("No statements found for account with id = %d", accountId));
+                    throw new NoDataFoundException(String.format("No statements found for account with id = %s", accountId));
                 else
                     throw new NoDataFoundException("No statements found");
             }
@@ -79,7 +79,7 @@ public class StatementServiceImp implements StatementService {
             if (streamResult.isEmpty()) {
                 if (checkValue.isPresent()) {
                     throw new NoDataFoundException(
-                            String.format("No statements found for account with id = %d  within the provided date range", accountId));
+                            String.format("No statements found for account with id = %s  within the provided date range", accountId));
                 }
                 else
                     throw new NoDataFoundException("No statements found within the provided date range");
@@ -89,14 +89,14 @@ public class StatementServiceImp implements StatementService {
                 statement.getAccount().setAccountNumber(String.valueOf(
                         hashingMapper.encoder(statement.getAccount().getAccountNumber())));
             });
-            logger.info(String.format("Stream result size: %s, Stream result: %d",streamResult.size(),streamResult));
+            logger.info(String.format("Stream result size: %d, Stream result: %s",streamResult.size(),streamResult));
 
             return streamResult;
         }catch (NumberFormatException ex){
-            logger.error(String.format("NumberParsingException: %d",ex.getStackTrace()));
+            logger.error(String.format("NumberParsingException: %s",ex.getStackTrace()));
             throw new NumberParsingException("Not Valid Parameters");
         }catch (DateTimeParseException e ){
-            logger.error(String.format("DateTimeParseException: %d",e.getStackTrace()));
+            logger.error(String.format("DateTimeParseException: %s",e.getStackTrace()));
             throw new DateParsingException("Invalid Date Format");
         }
     }
@@ -139,7 +139,7 @@ public class StatementServiceImp implements StatementService {
             if (streamResult.isEmpty()) {
                 if (checkValue.isPresent())
                     throw new NoDataFoundException(
-                            String.format("No Statements found for account with id = %d  with the provided amount range", accountId));
+                            String.format("No Statements found for account with id = %s  with the provided amount range", accountId));
                 else
                     throw new NoDataFoundException("No Statements found with the provided amount range");
             }
@@ -153,7 +153,7 @@ public class StatementServiceImp implements StatementService {
             return streamResult;
 
         }catch (NumberFormatException ex){
-            logger.error(String.format("NumberParsingException: %d",ex.getStackTrace()));
+            logger.error(String.format("NumberParsingException: %s",ex.getStackTrace()));
             throw new NumberParsingException("Not Valid Parameters");
         }
     }
@@ -178,7 +178,7 @@ public class StatementServiceImp implements StatementService {
 
             if (statementsList.isEmpty()) {
                 if (checkValue.isPresent())
-                    throw new NoDataFoundException(String.format("No statements found for account with id =  %d", accountId));
+                    throw new NoDataFoundException(String.format("No statements found for account with id =  %s", accountId));
                 else
                     throw new NoDataFoundException("No statements found");
             }
@@ -193,7 +193,7 @@ public class StatementServiceImp implements StatementService {
 
             if (streamResult.isEmpty()) {
                 if (checkValue.isPresent())
-                    throw new NoDataFoundException(String.format("No statements found for account with id = %d within the last three months", accountId));
+                    throw new NoDataFoundException(String.format("No statements found for account with id = %s within the last three months", accountId));
                 else
                     throw new NoDataFoundException("No statements found within the last three months");
             }
@@ -206,7 +206,7 @@ public class StatementServiceImp implements StatementService {
 
             return streamResult;
         }catch (NumberFormatException ex){
-            logger.error(String.format("NumberParsingException: %d",ex.getStackTrace()));
+            logger.error(String.format("NumberParsingException: %s",ex.getStackTrace()));
             throw new NumberParsingException("Not Valid Parameters");
         }
     }
