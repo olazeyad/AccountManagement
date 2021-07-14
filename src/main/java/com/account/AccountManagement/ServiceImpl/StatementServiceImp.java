@@ -123,7 +123,7 @@ public class StatementServiceImp implements StatementService {
 
             if (statementsList.isEmpty()) {
                 if (checkValue.isPresent())
-                    throw new NoDataFoundException(String.format("No statements found for account with id = %d", accountId));
+                    throw new NoDataFoundException(String.format("No statements found for account with id = %s", accountId));
                 else
                     throw new NoDataFoundException("No statements found");
             }
